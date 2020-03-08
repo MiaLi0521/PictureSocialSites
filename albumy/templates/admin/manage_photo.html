@@ -1,0 +1,108 @@
+{% extends 'admin/index.html' %}
+{% from 'bootstrap/pagination.html' import render_pagination %}
+
+{% block title %}Manage Photo{% endblock %}
+
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {{ render_breadcrumb_item('admin.index', 'Dashboard Home') }}
+            {{ render_breadcrumb_item('admin.manage_photo', 'Manage Photo') }}
+        </ol>
+    </nav>
+    <div class="page-header">
+        <h1>
+            Photos<small class="text-muted">{{ pagination.total }}</small>
+            <span class="dropdown">
+                <button class="btn btn-secondary btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                    Order by {{ order_rule }} <span class="oi oi-elevator"></span>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% if order_rule == 'flag' %}
+                        <a class="dropdown-item" href="{{ url_for('admin.manage_photo', order='by_time') }}">
+                            Order by Time
+                        </a>
+                    {% else %}
+                        <a class="dropdown-item" href="{{ url_for('admin.manage_photo', order='by_flag') }}">
+                            Order by Flag
+                        </a>
+                    {% endif %}
+                </div>
+            </span>
+        </h1>
+    </div>
+    {% if photos %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Image</th>
+                <th>Description</th>
+                <th>Tag</th>
+                <th>Author</th>
+                <th>Reported</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            {% for photo in photos %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('main.show_photo', photo_id=photo.id) }}">
+                        <img src="{{ url_for('main.get_image', filename=photo.filename_s) }}" width="250">
+                    </a>
+                </td>
+                <td>{{ photo.description }}</td>
+                <td>
+                    {% if photo.tags %}
+                        {% for tag in photo.tags %}
+                            <button class="btn btn-outline-danger btn-sm mb-1" data-toggle="modal" data-target="#confirm-modal"
+                                    data-title="Delete Tag Confirm" data-body="Delete tag {{ tag.name }}?"
+                                    data-action="Delete" data-href="{{ url_for('admin.delete_tag', tag_id=tag.id) }}">
+                                {{ tag.name }} <span class="oi oi-trash" aria-hidden="true"></span>
+                            </button>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('user.index', username=photo.author.username) }}">{{ photo.author.username }}</a>
+                </td>
+                <td>{{ photo.flag }}</td>
+                <td>{{ moment(photo.timestamp).format('LL') }}</td>
+                <td>
+                    <button class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#confirm-modal"
+                            data-title="Delete Photo Confirm" data-body="Delete this photo of {{ photo.author.name }}?"
+                            data-action="Delete" data-href="{{ url_for('admin.delete_photo', photo_id=photo.id,
+                            next=request.full_path) }}">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {# 确认模态框 #}
+        <div class="modal fade" id="confirm-modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body"><p></p></div>
+                    <div class="modal-footer">
+                        <form action="" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Cancel</button>
+                            <button class="btn btn-danger btn-confirm" type="submit"></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">{{ render_pagination(pagination) }}</div>
+    {% else %}
+        <div class="tip"><h5>No photos.</h5></div>
+    {% endif %}
+{% endblock %}

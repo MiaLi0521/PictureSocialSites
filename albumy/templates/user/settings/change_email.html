@@ -1,0 +1,11 @@
+{% extends 'user/settings/base.html' %}
+{% from 'bootstrap/form.html' import render_form %}
+
+{% block title %}Change Email{% endblock %}
+
+{% block setting_content %}
+    <div class="card w-100 bg-light">
+        <div class="card-header"><h6>Change Email</h6></div>
+        <div class="card-body">{{ render_form(form) }}</div>
+    </div>
+{% endblock %}

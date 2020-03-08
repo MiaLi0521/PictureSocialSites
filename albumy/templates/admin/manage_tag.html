@@ -1,0 +1,64 @@
+{% extends 'admin/index.html' %}
+{% from 'bootstrap/pagination.html' import render_pagination %}
+
+{% block title %}Manage Tags{% endblock %}
+
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <oi class="breadcrumb">
+            {{ render_breadcrumb_item('admin.index', 'Dashboard Home') }}
+            {{ render_breadcrumb_item('admin.manage_tag', 'Manage Tag') }}
+        </oi>
+    </nav>
+    <div class="page-header"><h1>Tags {{ pagination.total }}</h1></div>
+    {% if tags %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>No.</th>
+                <th>Name</th>
+                <th>Photos</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            {% for tag in tags %}
+            <tr>
+                <td>{{ tag.id }}</td>
+                <td>{{ tag.name }}</td>
+                <td><a href="{{ url_for('main.show_tag', tag_id=tag.id) }}">{{ tag.photos|length }}</a></td>
+                <td>
+                    <button class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#confirm-modal"
+                            data-title="Delete Tag Confirm" data-body="Delete the tag {{ tag.name }}?"
+                            data-action="Delete", data-href="{{ url_for('admin.delete_tag', tag_id=tag.id) }}">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {# 确认模态框 #}
+        <div class="modal fade" id="confirm-modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body"><p></p></div>
+                    <div class="modal-footer">
+                        <form action="" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Cancel</button>
+                            <button class="btn btn-danger btn-confirm" type="submit"></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">{{ render_pagination(pagination) }}</div>
+    {% else %}
+        <div class="tip"><h5>No tags.</h5></div>
+    {% endif %}
+{% endblock %}
